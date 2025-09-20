@@ -1,28 +1,35 @@
 'use strict';
 
 const title = document.querySelectorAll('thead th');
-const titleArray = Array.from(title);
-
-const tdName = document.querySelectorAll('tbody tr');
-const tdArray = Array.from(tdName);
-
 const tbody = document.querySelector('tbody');
 
-titleArray.forEach((th) => {
-  th.addEventListener('click', (e) => {
-    const cellIndex = e.target.cellIndex;
+title.forEach((th) => {
+  th.addEventListener('click', () => {
+    const cellIndex = th.cellIndex;
+    const rows = Array.from(tbody.querySelectorAll('tr')).map((row, index) => ({
+      row,
+      value: row.cells[cellIndex].textContent,
+      index
+    }));
 
-    // tdArray.forEach((tr) => {
-    //   console.log(tr.cells[cellIndex].textContent);
-    // });
+    rows.sort((a, b) => {
+      let valueA = a.value;
+      let valueB = b.value;
 
-    tdArray.sort((rowA, rowB) => {
-      const valueA = rowA.cells[cellIndex].textContent;
-      const valueB = rowB.cells[cellIndex].textContent;
-      return valueA.localeCompare(valueB);
+      if (cellIndex === 2 || cellIndex === 3) {
+        valueA = parseFloat(valueA.replace(/[$,]/g, '')) || valueA;
+        valueB = parseFloat(valueB.replace(/[$,]/g, '')) || valueB;
+      }
+
+      if (!isNaN(valueA) && !isNaN(valueB)) {
+        return valueA - valueB;
+      }
+
+      const comparison = valueA.localeCompare(valueB);
+      return comparison === 0 ? a.index - b.index : comparison;
     });
 
     tbody.innerHTML = '';
-    tdArray.forEach((row) => tbody.appendChild(row));
+    rows.forEach(({ row }) => tbody.appendChild(row));
   });
 });
